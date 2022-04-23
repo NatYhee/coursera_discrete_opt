@@ -19,7 +19,7 @@ class LinearOptimizer:
         total_value = sum(
             model.x[i]*self.items[i].value for i in range(self.summary_items["total_items"])
         )
-        model.obj += total_value
+        model.obj.expr += total_value
 
         used_capacity = sum(
             model.x[i]*self.items[i].weight for i in range(self.summary_items["total_items"])
@@ -43,7 +43,7 @@ class LinearOptimizer:
     @staticmethod
     def _solve(model:pyo.ConcreteModel, solver:str="glpk"):
         opt = pyo.SolverFactory('glpk')
-        result = opt(model)
+        result = opt.solve(model)
         return result
 
     
