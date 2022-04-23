@@ -1,23 +1,16 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
 
-from knapsack.utils import format_input
+from utils import format_input
+from model.optimizer import LinearOptimizer
 
 def solve_it(input_data):
     # Modify this code to run your optimization algorithm
     items, summary_items = format_input(input_data)
 
-    # a trivial algorithm for filling the knapsack
-    # it takes items in-order until the knapsack is full
-    value = 0
-    weight = 0
-    taken = [0]*len(items)
-
-    for item in items:
-        if weight + item.weight <= summary_items["total_capacity"]:
-            taken[item.index] = 1
-            value += item.value
-            weight += item.weight
+    optimizer = LinearOptimizer(items, summary_items)
+    result = optimizer._solve(optimizer.model)
+    breakpoint()
     
     # prepare the solution in the specified output format
     output_data = str(value) + ' ' + str(0) + '\n'
