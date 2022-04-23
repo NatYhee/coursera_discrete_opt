@@ -12,7 +12,7 @@ def format_input(input_data: str):
 
     Returns:
         items (Item): named tuple contain information of each item
-        summary_dict (dict): dictionary contains summary information of input
+        summary_items (dict): dictionary contains summary information of input
     """
 
     lines = input_data.split("\n")
@@ -21,7 +21,7 @@ def format_input(input_data: str):
     firstLine = lines[0].split()
     item_count = int(firstLine[0])
     capacity = int(firstLine[1])
-    summary_dict = {"total_item": item_count, "total_capacity": capacity}
+    summary_items = {"total_items": item_count, "total_capacity": capacity}
 
     # extract information from after conclusion row
     items = []
@@ -30,4 +30,4 @@ def format_input(input_data: str):
         parts = line.split()
         items.append(Item(i - 1, int(parts[0]), int(parts[1])))
 
-    return items, summary_dict
+    return items, summary_items
