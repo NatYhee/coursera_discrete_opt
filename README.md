@@ -2,6 +2,7 @@
 
 ### Assignment 1: Knapsack
 # Executing solver
-```python
-python -m knapsack.solver knapsack/data/ks_4_0
+```command
+cd knapsack
+python -m solver ./data/ks_4_0
 ```
