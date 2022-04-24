@@ -77,7 +77,7 @@ class LinearOptimizer:
     @staticmethod
     def _solve(
         model: pyo.ConcreteModel, solver: str = "glpk"
-    ) -> Tuple(SolverResults, dict):
+    ) -> Tuple[SolverResults, dict]:
         """
         Activate optimization process.
 

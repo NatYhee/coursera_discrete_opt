@@ -5,7 +5,7 @@ from pyomo.opt.results.results_ import SolverResults
 Item = namedtuple("Item", ["index", "value", "weight"])
 
 
-def format_input(input_data: str) -> Tuple(namedtuple, dict):
+def format_input(input_data: str) -> Tuple[namedtuple, dict]:
     """
     Transform input_data into desired format before putting in optimizer.
 
