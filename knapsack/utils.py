@@ -1,18 +1,20 @@
 from collections import namedtuple
+from typing import Tuple
+from pyomo.opt.results.results_ import SolverResults
 
 Item = namedtuple("Item", ["index", "value", "weight"])
 
 
-def format_input(input_data: str):
+def format_input(input_data: str) -> Tuple(namedtuple, dict):
     """
     Transform input_data into desired format before putting in optimizer.
 
     Args:
-        input_data (str): string of input data extracted from the raw file
+        input_data (str): string of input data extracted from the raw file.
 
     Returns:
-        items (Item): named tuple contain information of each item
-        summary_items (dict): dictionary contains summary information of input
+        items (namedtuple): named tuple contain information of each item.
+        summary_items (dict): dictionary contains summary information of input.
     """
 
     lines = input_data.split("\n")
@@ -33,13 +35,31 @@ def format_input(input_data: str):
     return items, summary_items
 
 
-def get_opt_ending_status(solver_summary):
+def get_opt_ending_status(solver_summary: SolverResults) -> str:
+    """
+    Extracting termination condition from SolverResults object which is log of solver status.
+
+    Args:
+        solver_summary (SolverResults): object that contains log of solver status.
+
+    Returns:
+        termination_condition (str): status flag whether solver ends up with optimal result of not.
+    """
     solver_status = solver_summary.Solver._list
     termination_condition = str(solver_status[0]["termination_condition"])
     return termination_condition
 
 
-def format_output(knapsack_dict, solver_summary):
+def format_output(knapsack_dict: dict, solver_summary: SolverResults) -> str:
+    """
+    Preparing final output data.
+
+    Args:
+        solver_summary (SolverResults): object that contains log of solver status.
+
+    Returns:
+        termination_condition (str): status flag whether solver ends up with optimal result of not.
+    """
     termination_condition = get_opt_ending_status(solver_summary)
 
     optimal = 1 if termination_condition == "optimal" else 0
