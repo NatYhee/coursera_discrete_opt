@@ -31,3 +31,19 @@ def format_input(input_data: str):
         items.append(Item(i - 1, int(parts[0]), int(parts[1])))
 
     return items, summary_items
+
+
+def get_opt_ending_status(solver_summary):
+    solver_status = solver_summary.Solver._list
+    termination_condition = str(solver_status[0]["termination_condition"])
+    return termination_condition
+
+
+def format_output(knapsack_dict, solver_summary):
+    termination_condition = get_opt_ending_status(solver_summary)
+
+    optimal = 1 if termination_condition == "optimal" else 0
+    output_data = str(knapsack_dict["value"]) + " " + str(optimal) + "\n"
+    output_data += " ".join(map(str, knapsack_dict["selected_items"]))
+
+    return output_data
