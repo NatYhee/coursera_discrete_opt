@@ -5,7 +5,16 @@ from utils import format_input, format_output
 from model.optimizer import LinearOptimizer
 
 
-def solve_it(input_data):
+def solve_it(input_data: str) -> str:
+    """
+    Solving knapsack problem for given input_data.
+
+    Args:
+        input_data (str): input data of items for selection in knapsack.
+
+    Returns:
+        output_data (str): output data of itemse selected in knapsack.
+    """
     # Modify this code to run your optimization algorithm
     items, summary_items = format_input(input_data)
 
