@@ -1,3 +1,4 @@
+from typing import Tuple
 import numpy as np
 import pyomo.environ as pyo
 
@@ -31,12 +32,11 @@ class LinearProgramming:
         model = LinearProgramming._init_concrete_model()
         model = LinearProgramming._adding_variables(model, self._nodes, self._colors)
         model = LinearProgramming._adding_objective_function(
-            model, self._nodes, self._colors
+            model, self._colors
         )
         model = LinearProgramming._constrain_on_adjacent_node(
-            model, self._edges, self._nodes, self._colors
+            model, self._edges, self._colors
         )
-        breakpoint()
         return model
 
     @staticmethod
@@ -68,11 +68,12 @@ class LinearProgramming:
             model (pyo.ConcreteModel): an concrete model object with variables.
         """
         model.x = pyo.Var(nodes, colors, within=pyo.Binary)
+        model.w = pyo.Var(colors, within=pyo.Binary)
         return model
 
     @staticmethod
     def _adding_objective_function(
-        model: pyo.ConcreteModel, nodes: list, colors: list
+        model: pyo.ConcreteModel, colors: list
     ) -> pyo.ConcreteModel:
         """
         Adding objective on minimizing number of color to concrete model object.
@@ -85,13 +86,7 @@ class LinearProgramming:
         Returns:
             model (pyo.ConcreteModel): an concrete model object with variables.
         """
-
-        for color in colors:
-
-            if sum(model.x[node, color] for node in nodes) >= 1:
-                # represent case that the color is used
-                model.obj.expr += 1
-
+        model.obj.expr += sum(model.w[color] for color in colors)
         return model
 
     @staticmethod
@@ -99,9 +94,8 @@ class LinearProgramming:
         model: pyo.ConcreteModel, edges: list, nodes: list, colors: list
     ):
         model = LinearProgramming._constrain_on_color_per_node(model, nodes, colors)
-        model = LinearProgramming._constrain_on_adjacent_node(
-            model, edges, colors
-        )
+        model = LinearProgramming._constrain_on_adjacent_node(model, edges, colors)
+        model = LinearProgramming._constrain_on_number_color(model, nodes, colors)
         return model
 
     @staticmethod
@@ -125,3 +119,33 @@ class LinearProgramming:
                     expr=model.x[edge[0], color] + model.x[edge[1], color] <= 1
                 )
         return model
+    
+    @staticmethod
+    def _constrain_on_number_color(
+        model: pyo.ConcreteModel, nodes: list, colors: list
+    ):
+
+        for node in nodes:
+            for color in colors:
+                model.con.add(expr=model.x[node, color] <= model.w[color])
+        return model
+
+    @staticmethod
+    def solve(
+        model: pyo.ConcreteModel, solver: str = "glpk"
+    ) -> Tuple[SolverResults, dict]:
+        """
+        Activate optimization process.
+
+        Args:
+            model (pyo.ConcreteModel): concrete model object contain variables, objective and constrain.
+            solver (str): name of solver that will be used in optimization process.
+
+        Returns:
+            solver_result (SolverResults): pyomo object contains summary of solver log
+            optimized_solution (dict): dictionary contain solved variable x
+        """
+        opt = pyo.SolverFactory(solver)
+        solver_result = opt.solve(model, tee=True)
+        optimized_solution = model.x.get_values()
+        return solver_result, optimized_solution
