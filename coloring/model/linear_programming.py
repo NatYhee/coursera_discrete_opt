@@ -10,12 +10,14 @@ class LinearProgramming:
     Crate linear programming model to find an optimal solution for graph coloring problem
     """
 
-    def __init__(
-        self, summary_edges: dict, connection_array: np.ndarray, edges_data: list
-    ) -> None:
+    def __init__(self, summary_edges: dict, connection_array: np.ndarray) -> None:
         self._summary_edges = summary_edges
         self._connection_array = connection_array
-        self._edges_data = edges_data
+        self._nodes = list(range(0, summary_edges["total_nodes"]))
+
+        # initially assume that the whole possible color equal to number of node
+        self._colors = list(range(0, summary_edges["total_nodes"]))
+
         self.model = self.construct_model()
 
     def construct_model(self) -> pyo.ConcreteModel:
@@ -28,7 +30,10 @@ class LinearProgramming:
         """
         model = LinearProgramming._init_concrete_model()
         model = LinearProgramming._adding_variables(
-            model, self._summary_edges, self._edges_data
+            model, self._summary_edges, self._nodes, self._colors
+        )
+        model = LinearProgramming._adding_objective_function(
+            model, self._nodes, self._colors
         )
 
         return model
@@ -48,21 +53,66 @@ class LinearProgramming:
 
     @staticmethod
     def _adding_variables(
-        model: pyo.ConcreteModel, summary_edges: dict, edges_data: list
+        model: pyo.ConcreteModel, nodes: list, colors: list
     ) -> pyo.ConcreteModel:
         """
         Adding variables to concrete model object.
 
         Args:
             model (pyo.ConcreteModel): an empty concrete model object.
-            summary_edges (dict): a dictionary contains summary of edges data.
-            edges_data (list): rew data of node and connection
+            nodes (list): unique list of all node in raw data
+            colors (list): unique list of number represent color
 
         Returns:
             model (pyo.ConcreteModel): an concrete model object with variables.
         """
-        color = range(summary_edges["total_node"])
-        node = list(set([edges[0] for edges in edges_data]))
-
-        model.x = pyo.Var(node, color, within=pyo.Binary)
+        model.x = pyo.Var(nodes, colors, within=pyo.Binary)
         return model
+
+    @staticmethod
+    def _adding_objective_function(
+        model: pyo.ConcreteModel, nodes: list, colors: list
+    ) -> pyo.ConcreteModel:
+        """
+        Adding objective on minimizing number of color to concrete model object.
+
+        Args:
+            model (pyo.ConcreteModel): an empty concrete model object.
+            nodes (list): unique list of all node in raw data
+            colors (list): unique list of number represent color
+
+        Returns:
+            model (pyo.ConcreteModel): an concrete model object with variables.
+        """
+
+        for color in colors:
+
+            if sum(model.x[node, color] for node in nodes) >= 1:
+                # represent case that the color is used
+                model.obj.expr += 1
+
+        return model
+
+    @staticmethod
+    def _adding_constraints(model: pyo.ConcreteModel, connection_array:np.ndarray, nodes: list, colors: list):
+        model = LinearProgramming._constrain_on_color_per_node(model, nodes, colors)
+        model = LinearProgramming._constrain_on_adjacent_node(model, connection_array, nodes, colors)
+
+    @staticmethod
+    def _constrain_on_color_per_node(
+        model: pyo.ConcreteModel, nodes: list, colors: list
+    ):
+
+        for node in nodes:
+            color_per_node = sum(model.x[node, color] for color in colors)
+            model.con.add(expr=color_per_node == 1)
+        return model
+
+    @staticmethod
+    def _constrain_on_adjacent_node(
+        model: pyo.ConcreteModel, connection_array:np.ndarray, nodes: list, colors: list
+    ):
+
+        for i in nodes:
+            for j in nodes:
+                pass
