@@ -10,13 +10,13 @@ class LinearProgramming:
     Crate linear programming model to find an optimal solution for graph coloring problem
     """
 
-    def __init__(self, summary_edges: dict, connection_array: np.ndarray) -> None:
+    def __init__(self, summary_edges: dict, edges: list) -> None:
         self._summary_edges = summary_edges
-        self._connection_array = connection_array
-        self._nodes = list(range(0, summary_edges["total_nodes"]))
+        self._edges = edges
+        self._nodes = list(range(0, summary_edges["total_node"]))
 
         # initially assume that the whole possible color equal to number of node
-        self._colors = list(range(0, summary_edges["total_nodes"]))
+        self._colors = list(range(0, summary_edges["total_node"]))
 
         self.model = self.construct_model()
 
@@ -29,13 +29,14 @@ class LinearProgramming:
             model (pyo.ConcreteModel): concrete model object contain variables, objective and constrain.
         """
         model = LinearProgramming._init_concrete_model()
-        model = LinearProgramming._adding_variables(
-            model, self._summary_edges, self._nodes, self._colors
-        )
+        model = LinearProgramming._adding_variables(model, self._nodes, self._colors)
         model = LinearProgramming._adding_objective_function(
             model, self._nodes, self._colors
         )
-
+        model = LinearProgramming._constrain_on_adjacent_node(
+            model, self._edges, self._nodes, self._colors
+        )
+        breakpoint()
         return model
 
     @staticmethod
@@ -94,9 +95,14 @@ class LinearProgramming:
         return model
 
     @staticmethod
-    def _adding_constraints(model: pyo.ConcreteModel, connection_array:np.ndarray, nodes: list, colors: list):
+    def _adding_constraints(
+        model: pyo.ConcreteModel, edges: list, nodes: list, colors: list
+    ):
         model = LinearProgramming._constrain_on_color_per_node(model, nodes, colors)
-        model = LinearProgramming._constrain_on_adjacent_node(model, connection_array, nodes, colors)
+        model = LinearProgramming._constrain_on_adjacent_node(
+            model, edges, colors
+        )
+        return model
 
     @staticmethod
     def _constrain_on_color_per_node(
@@ -110,9 +116,12 @@ class LinearProgramming:
 
     @staticmethod
     def _constrain_on_adjacent_node(
-        model: pyo.ConcreteModel, connection_array:np.ndarray, nodes: list, colors: list
+        model: pyo.ConcreteModel, edges: list, colors: list
     ):
 
-        for i in nodes:
-            for j in nodes:
-                pass
+        for edge in edges:
+            for color in colors:
+                model.con.add(
+                    expr=model.x[edge[0], color] + model.x[edge[1], color] <= 1
+                )
+        return model
