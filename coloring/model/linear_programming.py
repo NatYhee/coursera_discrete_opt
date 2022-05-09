@@ -4,16 +4,20 @@ import pyomo.environ as pyo
 from pyomo.core.expr.numeric_expr import SumExpression
 from pyomo.opt.results.results_ import SolverResults
 
+
 class LinearProgramming:
     """
     Crate linear programming model to find an optimal solution for graph coloring problem
     """
 
-    def __init__(self, summary_edges:dict, connection_array:np.ndarray, edges_data:list) -> None:
+    def __init__(
+        self, summary_edges: dict, connection_array: np.ndarray, edges_data: list
+    ) -> None:
         self._summary_edges = summary_edges
         self._connection_array = connection_array
         self._edges_data = edges_data
-    
+        self.model = self.construct_model()
+
     def construct_model(self) -> pyo.ConcreteModel:
         """
         Constructs pyomo concrete model object including creates variable, constraints and adding objective.
@@ -23,10 +27,12 @@ class LinearProgramming:
             model (pyo.ConcreteModel): concrete model object contain variables, objective and constrain.
         """
         model = LinearProgramming._init_concrete_model()
-        model = LinearProgramming._adding_variables(model, self._summary_edges, self._edges_data)
+        model = LinearProgramming._adding_variables(
+            model, self._summary_edges, self._edges_data
+        )
 
         return model
-    
+
     @staticmethod
     def _init_concrete_model() -> pyo.ConcreteModel:
         """
@@ -39,10 +45,10 @@ class LinearProgramming:
         model.con = pyo.ConstraintList()
         model.obj = pyo.Objective(expr=0, sense=pyo.minimize)
         return model
-    
+
     @staticmethod
     def _adding_variables(
-        model: pyo.ConcreteModel, summary_edges: dict, edges_data:list
+        model: pyo.ConcreteModel, summary_edges: dict, edges_data: list
     ) -> pyo.ConcreteModel:
         """
         Adding variables to concrete model object.
@@ -55,10 +61,8 @@ class LinearProgramming:
         Returns:
             model (pyo.ConcreteModel): an concrete model object with variables.
         """
-        color = range(summary_edges["total_nodes"])
+        color = range(summary_edges["total_node"])
         node = list(set([edges[0] for edges in edges_data]))
 
-        model.x = pyo.Var(
-            node, color, within=pyo.Binary
-        )
+        model.x = pyo.Var(node, color, within=pyo.Binary)
         return model
