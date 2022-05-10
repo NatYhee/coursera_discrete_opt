@@ -1,6 +1,11 @@
 #!/usr/bin/python
 # -*- coding: utf-8 -*-
-from utils import format_input, get_edges_connection_array
+from utils import (
+    format_input,
+    get_edges_connection_array,
+    reformat_solution,
+    format_output,
+)
 from model.linear_programming import LinearProgramming
 
 
@@ -17,18 +22,14 @@ def solve_it(input_data):
 
     # parse the input
     edges, summary_edges = format_input(input_data)
-    connection_array = get_edges_connection_array(edges, summary_edges)
 
     # preparing for linear programming to solve the issue
-    lp_optimizer = LinearProgramming(summary_edges, connection_array, edges)
+    lp_optimizer = LinearProgramming(summary_edges, edges)
+    solver_summary, optimized_solution = lp_optimizer.solve(lp_optimizer.model)
 
-    # build a trivial solution
-    # every node has its own color
-    solution = range(0, summary_edges["total_node"])
-
-    # prepare the solution in the specified output format
-    output_data = str(summary_edges["total_node"]) + " " + str(0) + "\n"
-    output_data += " ".join(map(str, solution))
+    # preparing for output file
+    post_process_solution = reformat_solution(optimized_solution)
+    output_data = format_output(post_process_solution, solver_summary)
 
     return output_data
 
