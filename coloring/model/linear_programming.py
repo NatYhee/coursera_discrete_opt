@@ -31,11 +31,9 @@ class LinearProgramming:
         """
         model = LinearProgramming._init_concrete_model()
         model = LinearProgramming._adding_variables(model, self._nodes, self._colors)
-        model = LinearProgramming._adding_objective_function(
-            model, self._colors
-        )
-        model = LinearProgramming._constrain_on_adjacent_node(
-            model, self._edges, self._colors
+        model = LinearProgramming._adding_objective_function(model, self._colors)
+        model = LinearProgramming._adding_constraints(
+            model, self._edges, self._nodes, self._colors
         )
         return model
 
@@ -119,11 +117,9 @@ class LinearProgramming:
                     expr=model.x[edge[0], color] + model.x[edge[1], color] <= 1
                 )
         return model
-    
+
     @staticmethod
-    def _constrain_on_number_color(
-        model: pyo.ConcreteModel, nodes: list, colors: list
-    ):
+    def _constrain_on_number_color(model: pyo.ConcreteModel, nodes: list, colors: list):
 
         for node in nodes:
             for color in colors:
